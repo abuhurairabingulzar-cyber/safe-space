@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Safe Space ☁️</title>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f5f6f8; 
+            color: #2d3748;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .mobile-frame {
+            background: #ffffff;
+            width: 100%;
+            max-width: 412px;
+            min-height: 100vh;
+            box-sizing: border-box;
+            padding: 30px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        @media (min-width: 413px) {
+            .mobile-frame {
+                min-height: 85vh;
+                border-radius: 32px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.05);
+            }
+        }
+
+        h1 { font-size: 1.5rem; color: #1a202c; margin: 0; font-weight: 700; }
+        .subtitle { font-size: 0.9rem; color: #718096; margin: 0; line-height: 1.5; }
+
+        /* Component: Text Anchor Log with Navigation */
+        .anchor-card {
+            background-color: #f7fafc;
+            border-left: 4px solid #cbd5e1;
+            padding: 18px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .date-badge { font-size: 0.75rem; color: #a0aec0; font-weight: 700; text-transform: uppercase; }
+        .nav-link { font-size: 0.8rem; color: #4a5568; cursor: pointer; text-decoration: underline; font-weight: 500; }
+        .message-text { margin: 0; font-size: 0.95rem; color: #4a5568; line-height: 1.6; min-height: 70px; }
+
+        /* Component: Secure Voice Note Player */
+        .audio-card {
+            background: #edf2f7;
+            padding: 18px;
+            border-radius: 16px;
+            text-align: center;
+        }
+        .audio-card span { font-size: 0.85rem; color: #4a5568; font-weight: 600; display: block; margin-bottom: 12px; }
+        audio { width: 100%; }
+
+        /* Component: Interactive Low-Pressure Signals */
+        .signal-title { font-size: 0.85rem; color: #718096; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: -10px;}
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .signal-btn {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #4a5568;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .signal-btn:active {
+            transform: scale(0.97);
+            background: #f7fafc;
+        }
+        
+        /* Interactive Output Box */
+        .response-box {
+            background: #fffaf0;
+            border: 1px solid #feebc8;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            color: #c05621;
+            line-height: 1.5;
+            display: none; /* Hidden until a button is pressed */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-frame">
+        <div>
+            <h1>Holding Space</h1>
+            <p style="margin-top: 8px;" class="subtitle">A quiet corner kept safe for you while I'm away. No pressure to play along, no need to reply.</p>
+        </div>
+
+        <!-- Dynamic Text Vault Component -->
+        <div class="anchor-card">
+            <div class="card-header">
+                <span class="date-badge" id="vault-date">Reminder #1</span>
+                <span class="nav-link" onclick="cycleMessage()">Next Reminder →</span>
+            </div>
+            <p class="message-text" id="vault-text">"I know your mind is noisy and exhausted right now. I don't need you to fix it, and I don't need you to pretend. I am standing guard right here."</p>
+        </div>
+
+        <!-- Voice Note Component -->
+        <div class="audio-card">
+            <span>Listen to my voice whenever you feel lost 🎧</span>
+            <!-- Explicit placeholder file path for local verification -->
+            <audio controls src="voice_notes/note1.mp3"></audio>
+        </div>
+
+        <!-- Interactive Signals -->
+        <span class="signal-title">Quick Status Signals</span>
+        <div class="grid-layout">
+            <button class="signal-btn" onclick="triggerSignal('hug')">Need a hug 🫂</button>
+            <button class="signal-btn" onclick="triggerSignal('space')">Need space ☁️</button>
+            <button class="signal-btn" onclick="triggerSignal('quiet')">Brain is loud 🧠</button>
+            <button class="signal-btn" onclick="triggerSignal('missing')">Missing you 📍</button>
+        </div>
+
+        <!-- Safe feedback area that generates instant confirmation validation -->
+        <div class="response-box" id="feedback-panel"></div>
+    </div>
+
+    <script>
+        // Internal Vault Array containing shifting, grounding anchors
+        const messages = [
+            { id: "Reminder #1", text: "I know your mind is noisy and exhausted right now. I don't need you to fix it, and I don't need you to pretend. I am standing guard right here." },
+            { id: "Reminder #2", text: "Depression lies, baby. It tells you that you are a burden and that you are empty. It's wrong. You are whole, you are my wife, and I love you through this freeze." },
+            { id: "Reminder #3", text: "Identity erosion makes you feel like you've vanished. But your roots are deep in my heart. I remember exactly who you are, even when you temporarily can't." },
+            { id: "Reminder #4", text: "There is no timeline for feeling better. You don't owe me 'happy Abu'. I am perfectly content holding space for the quiet, cold version of you too." }
+        ];
+
+        let currentMsgIndex = 0;
+
+        function cycleMessage() {
+            currentMsgIndex = (currentMsgIndex + 1) % messages.length;
+            document.getElementById('vault-date').innerText = messages[currentMsgIndex].id;
+            document.getElementById('vault-text').innerText = messages[currentMsgIndex].text;
+        }
+
+        // Logic processing for one-way support confirmations
+        function triggerSignal(type) {
+            const panel = document.getElementById('feedback-panel');
+            panel.style.display = "block";
+            
+            if (type === 'hug') {
+                panel.innerText = "❤️ Signal logged. Close your eyes for a second. I am wrapping my arms around you from across the distance. Lean into it. I've got you.";
+            } else if (type === 'space') {
+                panel.innerText = "☁️ Signal logged. Turning down the volume. You have absolute permission to withdraw, disconnect, and ignore the world. No guilt allowed. I am still here.";
+            } else if (type === 'quiet') {
+                panel.innerText = "🧠 Signal logged. You don't have to process anything right now. Sit back, take a deep breath, and let my voice note play if you can handle it. Zero expectations.";
+            } else if (type === 'missing') {
+                panel.innerText = "📍 Signal logged. I feel it too, fiercely. But this distance has an expiration date, and my heart hasn't moved an inch from you.";
+            }
+        }
+    </script>
+</body>
+</html>
