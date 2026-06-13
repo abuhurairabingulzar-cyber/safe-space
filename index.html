@@ -54,7 +54,7 @@
             align-items: center;
             text-align: center;
             gap: 20px;
-            z-index: 10;
+            z-index: 999;
         }
 
         @media (min-width: 413px) {
@@ -129,10 +129,11 @@
         .signal-btn.active-signal { background: #e2e8f0; border-color: #cbd5e1; font-weight: 600; }
         
         .action-link-btn {
+            width: 100%;
             background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
             border: none; padding: 16px; border-radius: 14px; font-size: 0.95rem;
             font-weight: 600; color: #2d3748; cursor: pointer; display: flex;
-            align-items: center; justify-content: center; gap: 8px; margin-top: -4px;
+            align-items: center; justify-content: center; gap: 8px; box-sizing: border-box;
         }
 
         .response-box { 
@@ -143,41 +144,46 @@
         /* --- MODE SCREENS (FULL SURFACE OVERLAYS) --- */
         .gallery-screen, .nothing-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 100; display: none; flex-direction: column;
+            z-index: 500; display: none; flex-direction: column;
             animation: surfaceUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
         
         /* Insta Gallery Setup */
         .gallery-screen { background: #0f172a; }
         .gallery-header, .nothing-header {
-            position: sticky; top: 0; padding: 16px 20px; display: flex; align-items: center; z-index: 110;
+            position: absolute; top: 0; left: 0; width: 100%; padding: 20px; display: flex; align-items: center; z-index: 600; box-sizing: border-box;
         }
-        .gallery-header { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.08); }
-        .nothing-header { background: transparent; }
+        .gallery-header { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.08); position: sticky; }
         
         .back-btn {
-            background: none; border: none; color: #f8fafc; font-size: 1.05rem;
-            font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;
+            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15); color: #f8fafc; font-size: 0.95rem;
+            font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 30px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
         }
 
-        .feed-container { display: flex; flex-direction: column; gap: 32px; padding: 20px 0 80px 0; overflow-y: auto; height: 100%; }
+        .feed-container { display: flex; flex-direction: column; gap: 32px; padding: 80px 0 80px 0; overflow-y: auto; height: 100%; box-sizing: border-box; }
         .feed-image { width: 100%; height: auto; display: block; background: #1e293b; }
         .end-badge { color: #64748b; text-align: center; padding: 40px; font-size: 0.85rem; font-style: italic; }
 
         /* Nothing Sanctuary Setup */
         .nothing-screen { background: #090d16; overflow: hidden; }
-        #canvas-3d-container { width: 100%; flex-grow: 1; position: relative; outline: none; }
+        #canvas-3d-container { width: 100%; height: 100%; position: relative; outline: none; }
         
+        /* Fixed Fallback & Guide Text style */
+        .sanctuary-guide-text {
+            position: absolute; top: 30%; left: 10%; width: 80%; text-align: center;
+            color: #64748b; font-size: 0.9rem; line-height: 1.6; pointer-events: none; z-index: 510;
+        }
+
         /* Floating Dialogue Bubble Engine Layout */
         .popup-dialogue-box {
-            position: absolute; bottom: 12%; left: 10%; width: 80%;
+            position: absolute; bottom: 15%; left: 10%; width: 80%;
             background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             padding: 16px 20px; border-radius: 20px; box-sizing: border-box;
             color: #f8fafc; font-size: 0.95rem; line-height: 1.5; text-align: center;
             display: none; pointer-events: none; opacity: 0;
             transition: opacity 0.4s ease, transform 0.4s ease;
-            transform: translateY(10px); z-index: 120;
+            transform: translateY(10px); z-index: 650;
         }
         .popup-dialogue-box.active { display: block; opacity: 1; transform: translateY(0); }
 
@@ -261,6 +267,11 @@
             </button>
         </div>
         <div id="canvas-3d-container">
+            <!-- Instruction layer visible while loading or acting as fallback -->
+            <div class="sanctuary-guide-text" id="sanctuary-instructions">
+                Loading your 3D sanctuary...<br><br>
+                <span style="font-size:0.8rem; color:#475569;">Drag to look around.<br>Pinch and spread two fingers anywhere on my face to squeeze my cheeks.</span>
+            </div>
             <!-- Text Display Node -->
             <div class="popup-dialogue-box" id="dialogue-cloud"></div>
         </div>
@@ -369,7 +380,7 @@
             runLoader();
         }
 
-        /* --- 3D SANCTUARY ENGINE WITH COORD-WARP INTEGRATION --- */
+        /* --- 3D SANCTUARY ENGINE WITH FIXED CONSTRUCTOR MAPPING --- */
         const responses = [
             "Ouch! Okay, okay, my cheeks are going to fall off! 😂",
             "Aaye! If you stretch my face any further, I won't have a smile left for when I see you.",
@@ -383,6 +394,7 @@
         function build3DWorld() {
             running3DScene = true;
             const container = document.getElementById('canvas-3d-container');
+            const instructions = document.getElementById('sanctuary-instructions');
             
             const scene = new THREE.Scene();
             scene.background = new THREE.Color(0x090d16);
@@ -395,7 +407,7 @@
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             container.appendChild(renderer.domElement);
 
-            // Studio Ambient Profiles
+            // Studio Lighting
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
             scene.add(ambientLight);
             const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
@@ -403,36 +415,33 @@
             scene.add(directionalLight);
 
             let faceMesh = null;
-            let originalPositions = null; // Memory map cache for recovery warp
+            let originalPositions = null;
 
-            const loader = new GLTFLoader();
+            // FIXED: Swapped out raw 'GLTFLoader' for correct 'THREE.GLTFLoader' global layout structure
+            const loader = new THREE.GLTFLoader();
             loader.load('me.glb', function(gltf) {
                 faceMesh = gltf.scene;
                 
-                // Scale adjustments to center beautifully
-                faceMesh.position.set(0, -0.5, 0);
-                faceMesh.scale.set(1.5, 1.5, 1.5);
+                // Position adjustment profiles
+                faceMesh.position.set(0, -0.3, 0);
+                faceMesh.scale.set(1.4, 1.4, 1.4);
                 scene.add(faceMesh);
 
-                // Cache spatial layouts for runtime cheek deformations
+                // Update instruction text once loaded
+                instructions.innerHTML = "I'm right here.<br><br><span style='font-size:0.8rem; color:#475569;'>Drag to look at me.<br>Pinch and stretch my cheeks to talk to me.</span>";
+
                 faceMesh.traverse((child) => {
                     if (child.isMesh && child.geometry) {
                         const posAttr = child.geometry.attributes.position;
-                        originalPositions = posAttr.array.slice(); // Deep clone coordinate state
+                        originalPositions = posAttr.array.slice();
                     }
                 });
             }, undefined, function(err) {
-                // Inline canvas fallback indicator if model fails resolution bounds
-                const fallback = document.createElement('div');
-                fallback.className = 'loading-text';
-                fallback.style.position = 'absolute';
-                fallback.style.top = '40%';
-                fallback.style.width = '100%';
-                fallback.innerText = "☁️ [me.glb floating in space] ☁️\n\nSqueeze screen coordinates to display messages.";
-                container.appendChild(fallback);
+                // If file is missing or takes long, let her know it works via screen gestures
+                instructions.innerHTML = " Sanctuary Active <br><br><span style='font-size:0.8rem; color:#ef4444;'>[File me.glb not loaded yet]</span><br><br><span style='font-size:0.8rem; color:#475569;'>Pinch or squeeze your fingers together on the screen to talk to me anyway.</span>";
             });
 
-            // Physics Touch Tracking Context
+            // Input Physics States
             let touchStartDist = 0;
             let isSqueezing = false;
             let targetRotationX = 0;
@@ -440,13 +449,13 @@
             let pointerX = 0;
             let pointerY = 0;
 
+            // Background gesture listeners (Acts as invisible hitboxes if file is downloading)
             container.addEventListener('touchstart', function(e) {
                 if (e.touches.length === 1) {
                     pointerX = e.touches[0].clientX;
                     pointerY = e.touches[0].clientY;
                 } else if (e.touches.length === 2) {
                     isSqueezing = true;
-                    // Calculate basic geometric Euclidean distance tracking between touch vertices
                     const dx = e.touches[0].clientX - e.touches[1].clientX;
                     const dy = e.touches[0].clientY - e.touches[1].clientY;
                     touchStartDist = Math.sqrt(dx*dx + dy*dy);
@@ -454,36 +463,35 @@
             }, { passive: true });
 
             container.addEventListener('touchmove', function(e) {
-                if (e.touches.length === 1 && faceMesh) {
+                if (e.touches.length === 1) {
                     const deltaX = e.touches[0].clientX - pointerX;
                     const deltaY = e.touches[0].clientY - pointerY;
                     targetRotationY += deltaX * 0.007;
                     targetRotationX += deltaY * 0.007;
                     pointerX = e.touches[0].clientX;
                     pointerY = e.touches[0].clientY;
-                } else if (e.touches.length === 2 && isSqueezing && faceMesh) {
+                } else if (e.touches.length === 2 && isSqueezing) {
                     const dx = e.touches[0].clientX - e.touches[1].clientX;
                     const dy = e.touches[0].clientY - e.touches[1].clientY;
                     const currentDist = Math.sqrt(dx*dx + dy*dy);
                     const stretchDelta = Math.abs(currentDist - touchStartDist);
 
-                    // Dynamic runtime mesh structural manipulation script
-                    faceMesh.traverse((child) => {
-                        if (child.isMesh && child.geometry) {
-                            const posAttr = child.geometry.attributes.position;
-                            for (let i = 0; i < posAttr.count; i++) {
-                                // Target localized relative mesh points dynamically
-                                if (Math.abs(posAttr.getX(i)) > 0.3) { 
-                                    const sign = Math.sign(posAttr.getX(i));
-                                    posAttr.setX(i, originalPositions[i * 3] + (sign * stretchDelta * 0.002));
+                    if (faceMesh && originalPositions) {
+                        faceMesh.traverse((child) => {
+                            if (child.isMesh && child.geometry) {
+                                const posAttr = child.geometry.attributes.position;
+                                for (let i = 0; i < posAttr.count; i++) {
+                                    if (Math.abs(posAttr.getZ(i)) > 0.2) { 
+                                        const sign = Math.sign(posAttr.getX(i));
+                                        posAttr.setX(i, originalPositions[i * 3] + (sign * stretchDelta * 0.0015));
+                                    }
                                 }
+                                posAttr.needsUpdate = true;
                             }
-                            posAttr.needsUpdate = true;
-                        }
-                    });
+                        });
+                    }
 
-                    // Activation Threshold execution logic
-                    if (stretchDelta > 130) {
+                    if (stretchDelta > 110) {
                         triggerBubblePop();
                         isSqueezing = false;
                     }
@@ -510,7 +518,7 @@
 
             function triggerBubblePop() {
                 snapBackMesh();
-                if (window.navigator.vibrate) window.navigator.vibrate(25); // Android physical wrapper trigger
+                if (window.navigator.vibrate) window.navigator.vibrate(30);
                 
                 const cloud = document.getElementById('dialogue-cloud');
                 const randomMsg = responses[Math.floor(Math.random() * responses.length)];
@@ -523,18 +531,15 @@
                 }, 4500);
             }
 
-            // Realtime clock matrix animation pipeline
             let clock = new THREE.Clock();
 
             function animate() {
                 requestAnimationFrame(animate);
-                
                 const elapsedTime = clock.getElapsedTime();
 
                 if (faceMesh) {
-                    // Floating idle transformation calculus
                     if (!isSqueezing) {
-                        faceMesh.position.y = -0.5 + Math.sin(elapsedTime * 1.5) * 0.08;
+                        faceMesh.position.y = -0.3 + Math.sin(elapsedTime * 1.2) * 0.05;
                         faceMesh.rotation.y += (targetRotationY - faceMesh.rotation.y) * 0.1;
                         faceMesh.rotation.x += (targetRotationX - faceMesh.rotation.x) * 0.1;
                     }
@@ -543,7 +548,6 @@
             }
             animate();
 
-            // Liquid layout browser orientation adapter handler
             window.addEventListener('resize', function() {
                 camera.aspect = container.clientWidth / container.clientHeight;
                 camera.updateProjectionMatrix();
