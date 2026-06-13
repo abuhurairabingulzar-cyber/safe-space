@@ -7,10 +7,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Safe Space ☁️</title>
     
-    <!-- Three.js Library for rendering the 3D .glb file, plus the GLTFLoader engine -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -58,7 +54,7 @@
         }
 
         @media (min-width: 413px) {
-            .mobile-frame, .lock-screen, .gallery-screen, .nothing-screen {
+            .mobile-frame, .lock-screen, .slide-up-screen {
                 min-height: 85vh !important;
                 height: 85vh !important;
                 border-radius: 32px;
@@ -69,47 +65,21 @@
         h1 { font-size: 1.5rem; color: #1a202c; margin: 0; font-weight: 700; }
         .subtitle { font-size: 0.9rem; color: #718096; margin: 0; line-height: 1.5; }
 
-        /* Security Input Fields */
         .password-input {
-            width: 100%;
-            padding: 16px;
-            border-radius: 14px;
-            border: 1px solid #e2e8f0;
-            font-size: 1rem;
-            text-align: center;
-            box-sizing: border-box;
-            background: #f7fafc;
-            color: #2d3748;
-            outline: none;
-            transition: border 0.2s;
+            width: 100%; padding: 16px; border-radius: 14px; border: 1px solid #e2e8f0;
+            font-size: 1rem; text-align: center; box-sizing: border-box; background: #f7fafc;
+            color: #2d3748; outline: none; transition: border 0.2s;
         }
         .password-input:focus { border-color: #cbd5e1; }
 
         .unlock-btn {
-            width: 100%;
-            background: #4a5568;
-            color: white;
-            border: none;
-            padding: 16px;
-            border-radius: 14px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
+            width: 100%; background: #4a5568; color: white; border: none; padding: 16px;
+            border-radius: 14px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s;
         }
         .unlock-btn:active { background: #2d3748; }
         .error-msg { font-size: 0.85rem; color: #e53e3e; display: none; margin-top: -5px; }
 
-        /* Dashboard Internal Styles */
-        .anchor-card { 
-            background-color: #f7fafc; 
-            border-left: 4px solid #cbd5e1; 
-            padding: 18px; 
-            border-radius: 12px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px; 
-        }
+        .anchor-card { background-color: #f7fafc; border-left: 4px solid #cbd5e1; padding: 18px; border-radius: 12px; display: flex; flex-direction: column; gap: 12px; }
         .card-header { display: flex; justify-content: space-between; align-items: center; }
         .date-badge { font-size: 0.75rem; color: #a0aec0; font-weight: 700; text-transform: uppercase; }
         .nav-link { font-size: 0.8rem; color: #4a5568; cursor: pointer; text-decoration: underline; font-weight: 500; user-select: none; }
@@ -117,10 +87,7 @@
         
         .audio-card { background: #edf2f7; padding: 18px; border-radius: 16px; text-align: center; }
         .audio-card span { font-size: 0.85rem; color: #4a5568; font-weight: 600; display: block; margin-bottom: 12px; }
-        .audio-track-selector {
-            width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #cbd5e1;
-            background: white; font-size: 0.85rem; color: #4a5568; margin-bottom: 12px; outline: none;
-        }
+        .audio-track-selector { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #cbd5e1; background: white; font-size: 0.85rem; color: #4a5568; margin-bottom: 12px; outline: none; }
         audio { width: 100%; }
         
         .signal-title { font-size: 0.85rem; color: #718096; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: -10px;}
@@ -129,63 +96,47 @@
         .signal-btn.active-signal { background: #e2e8f0; border-color: #cbd5e1; font-weight: 600; }
         
         .action-link-btn {
-            width: 100%;
-            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
-            border: none; padding: 16px; border-radius: 14px; font-size: 0.95rem;
-            font-weight: 600; color: #2d3748; cursor: pointer; display: flex;
-            align-items: center; justify-content: center; gap: 8px; box-sizing: border-box;
+            width: 100%; background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%); border: none; padding: 16px; border-radius: 14px; font-size: 0.95rem;
+            font-weight: 600; color: #2d3748; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box;
         }
 
-        .response-box { 
-            background: #fffaf0; border: 1px solid #feebc8; padding: 15px; 
-            border-radius: 12px; font-size: 0.9rem; color: #c05621; line-height: 1.5; display: none; 
-        }
+        .response-box { background: #fffaf0; border: 1px solid #feebc8; padding: 15px; border-radius: 12px; font-size: 0.9rem; color: #c05621; line-height: 1.5; display: none; }
 
-        /* --- MODE SCREENS (FULL SURFACE OVERLAYS) --- */
-        .gallery-screen, .nothing-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 500; display: none; flex-direction: column;
-            animation: surfaceUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        /* --- SLIDE UP OVERLAYS (Gallery, Menus, Cloud) --- */
+        .slide-up-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 500; display: none; flex-direction: column;
+            animation: surfaceUp 0.35s cubic-bezier(0.16, 1, 0.3, 1); background: #0f172a;
         }
         
-        /* Insta Gallery Setup */
-        .gallery-screen { background: #0f172a; }
-        .gallery-header, .nothing-header {
+        .screen-header {
             position: absolute; top: 0; left: 0; width: 100%; padding: 20px; display: flex; align-items: center; z-index: 600; box-sizing: border-box;
         }
-        .gallery-header { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.08); position: sticky; }
         
         .back-btn {
             background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15); color: #f8fafc; font-size: 0.95rem;
             font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 30px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
         }
 
+        /* Insta Gallery Setup */
         .feed-container { display: flex; flex-direction: column; gap: 32px; padding: 80px 0 80px 0; overflow-y: auto; height: 100%; box-sizing: border-box; }
         .feed-image { width: 100%; height: auto; display: block; background: #1e293b; }
         .end-badge { color: #64748b; text-align: center; padding: 40px; font-size: 0.85rem; font-style: italic; }
 
-        /* Nothing Sanctuary Setup */
-        .nothing-screen { background: #090d16; overflow: hidden; }
-        #canvas-3d-container { width: 100%; height: 100%; position: relative; outline: none; }
-        
-        /* Fixed Fallback & Guide Text style */
-        .sanctuary-guide-text {
-            position: absolute; top: 30%; left: 10%; width: 80%; text-align: center;
-            color: #64748b; font-size: 0.9rem; line-height: 1.6; pointer-events: none; z-index: 510;
+        /* Sanctuary Menu Setup */
+        .menu-container {
+            display: flex; flex-direction: column; justify-content: center; align-items: center; flex-grow: 1; padding: 24px; gap: 20px;
         }
+        .menu-btn {
+            width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 24px; border-radius: 20px;
+            color: #f8fafc; font-size: 1.1rem; font-weight: 600; text-align: left; cursor: pointer; transition: background 0.2s;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .menu-btn:active { background: rgba(255,255,255,0.1); }
+        .menu-btn.disabled { opacity: 0.5; pointer-events: none; }
+        .menu-desc { display: block; font-size: 0.8rem; color: #94a3b8; font-weight: 400; margin-top: 6px; }
 
-        /* Floating Dialogue Bubble Engine Layout */
-        .popup-dialogue-box {
-            position: absolute; bottom: 15%; left: 10%; width: 80%;
-            background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            padding: 16px 20px; border-radius: 20px; box-sizing: border-box;
-            color: #f8fafc; font-size: 0.95rem; line-height: 1.5; text-align: center;
-            display: none; pointer-events: none; opacity: 0;
-            transition: opacity 0.4s ease, transform 0.4s ease;
-            transform: translateY(10px); z-index: 650;
-        }
-        .popup-dialogue-box.active { display: block; opacity: 1; transform: translateY(0); }
+        /* Cloud Canvas Setup */
+        #cloud-canvas { width: 100%; height: 100%; outline: none; }
 
         @keyframes surfaceUp {
             from { transform: translateY(100%); }
@@ -195,7 +146,6 @@
 </head>
 <body>
 
-    <!-- 1. The Gateway Shield Container -->
     <div class="lock-screen" id="gatekeeper-panel">
         <span style="font-size: 2rem;">🔒</span>
         <h1>Secure Connection</h1>
@@ -205,7 +155,6 @@
         <button class="unlock-btn" onclick="verifyKey()">Unlock Vault</button>
     </div>
 
-    <!-- 2. The Inner Sanctuary Dashboard -->
     <div class="mobile-frame" id="dashboard-panel">
         <div>
             <h1>Holding Space</h1>
@@ -224,8 +173,8 @@
             🎨 Open Your Sketch Vault →
         </button>
 
-        <button class="action-link-btn" style="background: linear-gradient(135deg, #3a4454 0%, #29303c 100%); color: #f8fafc;" onclick="openScreen('nothing')">
-            🕳️ Enter Quiet Sanctuary (Nothing Mode)
+        <button class="action-link-btn" style="background: linear-gradient(135deg, #3a4454 0%, #29303c 100%); color: #f8fafc;" onclick="openScreen('sanctuary-menu')">
+            🕳️ Enter Quiet Sanctuary
         </button>
 
         <div class="audio-card">
@@ -249,32 +198,44 @@
         <div class="response-box" id="feedback-panel"></div>
     </div>
 
-    <!-- 3. Full Screen Insta-Style Gallery Overlay View -->
-    <div class="gallery-screen" id="screen-gallery">
-        <div class="gallery-header">
-            <button class="back-btn" onclick="closeScreen('gallery')">
-                <span>←</span> Back to Vault
-            </button>
+    <div class="slide-up-screen" id="screen-gallery">
+        <div class="screen-header" style="background: rgba(15, 23, 42, 0.85); position: sticky;">
+            <button class="back-btn" onclick="closeScreen('gallery')"><span>←</span> Back to Vault</button>
         </div>
         <div class="feed-container" id="gallery-feed"></div>
     </div>
 
-    <!-- 4. Nothing Mode Sanctuary with 3D Interaction Frame -->
-    <div class="nothing-screen" id="screen-nothing">
-        <div class="nothing-header">
-            <button class="back-btn" onclick="closeScreen('nothing')">
-                <span>←</span> Exit Sanctuary
+    <div class="slide-up-screen" id="screen-sanctuary-menu">
+        <div class="screen-header">
+            <button class="back-btn" onclick="closeScreen('sanctuary-menu')"><span>←</span> Back</button>
+        </div>
+        <div class="menu-container">
+            <h2 style="color:white; font-size:1.4rem; margin:0 0 10px 0; text-align:center;">Quiet Sanctuary</h2>
+            <p style="color:#94a3b8; font-size:0.9rem; text-align:center; margin:0 0 30px 0;">No words required. Just choose an anchor.</p>
+            
+            <button class="menu-btn" onclick="openCloud()">
+                <span style="font-size: 1.8rem;">☁️</span>
+                <div>
+                    The Decompression Cloud
+                    <span class="menu-desc">Pull, stretch, and breathe with it.</span>
+                </div>
+            </button>
+
+            <button class="menu-btn disabled">
+                <span style="font-size: 1.8rem;">👤</span>
+                <div>
+                    The Face Squeeze
+                    <span class="menu-desc">Working on the 3D link... (Coming Soon)</span>
+                </div>
             </button>
         </div>
-        <div id="canvas-3d-container">
-            <!-- Instruction layer visible while loading or acting as fallback -->
-            <div class="sanctuary-guide-text" id="sanctuary-instructions">
-                Loading your 3D sanctuary...<br><br>
-                <span style="font-size:0.8rem; color:#475569;">Drag to look around.<br>Pinch and spread two fingers anywhere on my face to squeeze my cheeks.</span>
-            </div>
-            <!-- Text Display Node -->
-            <div class="popup-dialogue-box" id="dialogue-cloud"></div>
+    </div>
+
+    <div class="slide-up-screen" id="screen-cloud" style="background: #040812;">
+        <div class="screen-header">
+            <button class="back-btn" onclick="closeScreen('cloud')"><span>←</span> Exit</button>
         </div>
+        <canvas id="cloud-canvas"></canvas>
     </div>
 
     <script>
@@ -337,25 +298,28 @@
             if (saved) triggerSignal(saved);
         }
 
-        /* --- SCREEN ROUTER MECHANICS --- */
+        /* --- SCREEN ROUTER --- */
         let galleryLoaded = false;
-        let running3DScene = false;
 
         function openScreen(target) {
             document.getElementById(`screen-${target}`).style.display = 'flex';
             if (target === 'gallery' && !galleryLoaded) buildAutomatedFeed();
-            if (target === 'nothing' && !running3DScene) build3DWorld();
         }
 
         function closeScreen(target) {
             document.getElementById(`screen-${target}`).style.display = 'none';
         }
 
+        function openCloud() {
+            closeScreen('sanctuary-menu');
+            openScreen('cloud');
+            initCloudEngine();
+        }
+
         /* --- INSTA-FEED ENGINE --- */
         function buildAutomatedFeed() {
             const feed = document.getElementById('gallery-feed');
             let idx = 1;
-
             function runLoader() {
                 const img = new Image();
                 img.src = `sketches/pic${idx}.jpg`;
@@ -380,179 +344,112 @@
             runLoader();
         }
 
-        /* --- 3D SANCTUARY ENGINE WITH FIXED CONSTRUCTOR MAPPING --- */
-        const responses = [
-            "Ouch! Okay, okay, my cheeks are going to fall off! 😂",
-            "Aaye! If you stretch my face any further, I won't have a smile left for when I see you.",
-            "Careful, love, you're going to pull my face right through the screen! ❤️",
-            "You can pull, stretch, or squeeze my face as much as you want—I'm not going anywhere. I'm right here.",
-            "Even when you feel completely blank right now, I remember exactly who you are.",
-            "See? I'm completely pliable in your hands. You hold my heart just like that, always. 🕯️",
-            "System Error: Cheek structural integrity compromised. Please kiss screen to reboot. 😘"
-        ];
-
-        function build3DWorld() {
-            running3DScene = true;
-            const container = document.getElementById('canvas-3d-container');
-            const instructions = document.getElementById('sanctuary-instructions');
+        /* --- 2D FLUID CLOUD ENGINE --- */
+        let cloudEngineRunning = false;
+        
+        function initCloudEngine() {
+            if (cloudEngineRunning) return;
+            cloudEngineRunning = true;
             
-            const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x090d16);
+            const canvas = document.getElementById('cloud-canvas');
+            const ctx = canvas.getContext('2d');
+            let width, height, points = [];
+            const numPoints = 14;
+            const baseRadius = 100;
 
-            const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-            camera.position.z = 5;
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
 
-            const renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(container.clientWidth, container.clientHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            container.appendChild(renderer.domElement);
-
-            // Studio Lighting
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-            scene.add(ambientLight);
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(5, 5, 5);
-            scene.add(directionalLight);
-
-            let faceMesh = null;
-            let originalPositions = null;
-
-            // FIXED: Swapped out raw 'GLTFLoader' for correct 'THREE.GLTFLoader' global layout structure
-            const loader = new THREE.GLTFLoader();
-            loader.load('me.glb', function(gltf) {
-                faceMesh = gltf.scene;
-                
-                // Position adjustment profiles
-                faceMesh.position.set(0, -0.3, 0);
-                faceMesh.scale.set(1.4, 1.4, 1.4);
-                scene.add(faceMesh);
-
-                // Update instruction text once loaded
-                instructions.innerHTML = "I'm right here.<br><br><span style='font-size:0.8rem; color:#475569;'>Drag to look at me.<br>Pinch and stretch my cheeks to talk to me.</span>";
-
-                faceMesh.traverse((child) => {
-                    if (child.isMesh && child.geometry) {
-                        const posAttr = child.geometry.attributes.position;
-                        originalPositions = posAttr.array.slice();
-                    }
+            // Setup Cloud Physics Points
+            for(let i=0; i<numPoints; i++) {
+                let angle = (i / numPoints) * Math.PI * 2;
+                points.push({
+                    baseX: Math.cos(angle),
+                    baseY: Math.sin(angle),
+                    x: width/2 + Math.cos(angle) * baseRadius,
+                    y: height/2 + Math.sin(angle) * baseRadius,
+                    vx: 0, vy: 0
                 });
-            }, undefined, function(err) {
-                // If file is missing or takes long, let her know it works via screen gestures
-                instructions.innerHTML = " Sanctuary Active <br><br><span style='font-size:0.8rem; color:#ef4444;'>[File me.glb not loaded yet]</span><br><br><span style='font-size:0.8rem; color:#475569;'>Pinch or squeeze your fingers together on the screen to talk to me anyway.</span>";
-            });
+            }
 
-            // Input Physics States
-            let touchStartDist = 0;
-            let isSqueezing = false;
-            let targetRotationX = 0;
-            let targetRotationY = 0;
-            let pointerX = 0;
-            let pointerY = 0;
+            let touchX = -1000, touchY = -1000, isTouching = false;
 
-            // Background gesture listeners (Acts as invisible hitboxes if file is downloading)
-            container.addEventListener('touchstart', function(e) {
-                if (e.touches.length === 1) {
-                    pointerX = e.touches[0].clientX;
-                    pointerY = e.touches[0].clientY;
-                } else if (e.touches.length === 2) {
-                    isSqueezing = true;
-                    const dx = e.touches[0].clientX - e.touches[1].clientX;
-                    const dy = e.touches[0].clientY - e.touches[1].clientY;
-                    touchStartDist = Math.sqrt(dx*dx + dy*dy);
+            canvas.addEventListener('touchstart', e => {
+                isTouching = true;
+                touchX = e.touches[0].clientX;
+                touchY = e.touches[0].clientY;
+            }, {passive:true});
+            canvas.addEventListener('touchmove', e => {
+                touchX = e.touches[0].clientX;
+                touchY = e.touches[0].clientY;
+            }, {passive:true});
+            canvas.addEventListener('touchend', () => { isTouching = false; }, {passive:true});
+
+            function render() {
+                if(document.getElementById('screen-cloud').style.display === 'none') {
+                    cloudEngineRunning = false;
+                    return; // Stop rendering if screen is closed
                 }
-            }, { passive: true });
 
-            container.addEventListener('touchmove', function(e) {
-                if (e.touches.length === 1) {
-                    const deltaX = e.touches[0].clientX - pointerX;
-                    const deltaY = e.touches[0].clientY - pointerY;
-                    targetRotationY += deltaX * 0.007;
-                    targetRotationX += deltaY * 0.007;
-                    pointerX = e.touches[0].clientX;
-                    pointerY = e.touches[0].clientY;
-                } else if (e.touches.length === 2 && isSqueezing) {
-                    const dx = e.touches[0].clientX - e.touches[1].clientX;
-                    const dy = e.touches[0].clientY - e.touches[1].clientY;
-                    const currentDist = Math.sqrt(dx*dx + dy*dy);
-                    const stretchDelta = Math.abs(currentDist - touchStartDist);
+                ctx.clearRect(0, 0, width, height);
+                
+                // Cloud Breathing Logic
+                let time = Date.now() * 0.0015;
+                let currentRadius = baseRadius + Math.sin(time) * 15;
+                let centerX = width / 2;
+                let centerY = height / 2;
 
-                    if (faceMesh && originalPositions) {
-                        faceMesh.traverse((child) => {
-                            if (child.isMesh && child.geometry) {
-                                const posAttr = child.geometry.attributes.position;
-                                for (let i = 0; i < posAttr.count; i++) {
-                                    if (Math.abs(posAttr.getZ(i)) > 0.2) { 
-                                        const sign = Math.sign(posAttr.getX(i));
-                                        posAttr.setX(i, originalPositions[i * 3] + (sign * stretchDelta * 0.0015));
-                                    }
-                                }
-                                posAttr.needsUpdate = true;
-                            }
-                        });
-                    }
+                // Process Physics for Each Point
+                for(let i=0; i<points.length; i++) {
+                    let p = points[i];
+                    let targetX = centerX + p.baseX * currentRadius;
+                    let targetY = centerY + p.baseY * currentRadius;
 
-                    if (stretchDelta > 110) {
-                        triggerBubblePop();
-                        isSqueezing = false;
-                    }
-                }
-            }, { passive: true });
-
-            container.addEventListener('touchend', function() {
-                isSqueezing = false;
-                snapBackMesh();
-            }, { passive: true });
-
-            function snapBackMesh() {
-                if (!faceMesh || !originalPositions) return;
-                faceMesh.traverse((child) => {
-                    if (child.isMesh && child.geometry) {
-                        const posAttr = child.geometry.attributes.position;
-                        for (let i = 0; i < posAttr.count; i++) {
-                            posAttr.setX(i, originalPositions[i * 3]);
+                    // Pull towards touch
+                    if (isTouching) {
+                        let dx = touchX - p.x;
+                        let dy = touchY - p.y;
+                        let dist = Math.sqrt(dx*dx + dy*dy);
+                        if (dist < 180) {
+                            targetX += (dx / dist) * 80;
+                            targetY += (dy / dist) * 80;
                         }
-                        posAttr.needsUpdate = true;
                     }
-                });
-            }
 
-            function triggerBubblePop() {
-                snapBackMesh();
-                if (window.navigator.vibrate) window.navigator.vibrate(30);
-                
-                const cloud = document.getElementById('dialogue-cloud');
-                const randomMsg = responses[Math.floor(Math.random() * responses.length)];
-                
-                cloud.innerText = randomMsg;
-                cloud.classList.add('active');
-
-                setTimeout(() => {
-                    cloud.classList.remove('active');
-                }, 4500);
-            }
-
-            let clock = new THREE.Clock();
-
-            function animate() {
-                requestAnimationFrame(animate);
-                const elapsedTime = clock.getElapsedTime();
-
-                if (faceMesh) {
-                    if (!isSqueezing) {
-                        faceMesh.position.y = -0.3 + Math.sin(elapsedTime * 1.2) * 0.05;
-                        faceMesh.rotation.y += (targetRotationY - faceMesh.rotation.y) * 0.1;
-                        faceMesh.rotation.x += (targetRotationX - faceMesh.rotation.x) * 0.1;
-                    }
+                    // Elastic Spring Formula
+                    let ax = (targetX - p.x) * 0.08; // Stiffness
+                    let ay = (targetY - p.y) * 0.08;
+                    p.vx = (p.vx + ax) * 0.8; // Friction
+                    p.vy = (p.vy + ay) * 0.8;
+                    p.x += p.vx;
+                    p.y += p.vy;
                 }
-                renderer.render(scene, camera);
-            }
-            animate();
 
-            window.addEventListener('resize', function() {
-                camera.aspect = container.clientWidth / container.clientHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(container.clientWidth, container.clientHeight);
-            });
+                // Draw Smooth Blob using Quadratic Curves
+                ctx.beginPath();
+                let xc0 = (points[numPoints-1].x + points[0].x) / 2;
+                let yc0 = (points[numPoints-1].y + points[0].y) / 2;
+                ctx.moveTo(xc0, yc0);
+
+                for(let i=0; i<numPoints-1; i++) {
+                    let xc = (points[i].x + points[i+1].x) / 2;
+                    let yc = (points[i].y + points[i+1].y) / 2;
+                    ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+                }
+                ctx.quadraticCurveTo(points[numPoints-1].x, points[numPoints-1].y, xc0, yc0);
+                
+                ctx.fillStyle = "rgba(226, 232, 240, 0.9)";
+                ctx.shadowBlur = 60;
+                ctx.shadowColor = "rgba(203, 213, 225, 0.6)";
+                ctx.fill();
+
+                requestAnimationFrame(render);
+            }
+            render();
         }
     </script>
 </body>
