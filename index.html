@@ -71,9 +71,12 @@
             background: #f7fafc;
             color: #2d3748;
             outline: none;
-            transition: border 0.2s;
+            transition: border 0.2s, box-shadow 0.2s;
         }
-        .password-input:focus { border-color: #cbd5e1; }
+        .password-input:focus { 
+            border-color: #cbd5e1; 
+            box-shadow: 0 0 0 3px rgba(203, 213, 225, 0.3);
+        }
 
         .unlock-btn {
             width: 100%;
@@ -85,31 +88,70 @@
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.1s;
         }
-        .unlock-btn:active { background: #2d3748; }
+        .unlock-btn:active { background: #2d3748; transform: scale(0.98); }
 
         .error-msg { font-size: 0.85rem; color: #e53e3e; display: none; margin-top: -5px; }
 
         /* Dashboard Internal Styles */
-        .anchor-card { background-color: #f7fafc; border-left: 4px solid #cbd5e1; padding: 18px; border-radius: 12px; display: flex; flex-direction: column; gap: 12px; }
+        .anchor-card { 
+            background-color: #f7fafc; 
+            border-left: 4px solid #cbd5e1; 
+            padding: 18px; 
+            border-radius: 12px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
         .card-header { display: flex; justify-content: space-between; align-items: center; }
         .date-badge { font-size: 0.75rem; color: #a0aec0; font-weight: 700; text-transform: uppercase; }
-        .nav-link { font-size: 0.8rem; color: #4a5568; cursor: pointer; text-decoration: underline; font-weight: 500; }
+        .nav-link { font-size: 0.8rem; color: #4a5568; cursor: pointer; text-decoration: underline; font-weight: 500; user-select: none; }
         .message-text { margin: 0; font-size: 0.95rem; color: #4a5568; line-height: 1.6; min-height: 70px; }
+        
+        /* Audio Player Styling */
         .audio-card { background: #edf2f7; padding: 18px; border-radius: 16px; text-align: center; }
         .audio-card span { font-size: 0.85rem; color: #4a5568; font-weight: 600; display: block; margin-bottom: 12px; }
+        .audio-track-selector {
+            width: 100%;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            font-size: 0.85rem;
+            color: #4a5568;
+            margin-bottom: 12px;
+            outline: none;
+        }
         audio { width: 100%; }
+        
         .signal-title { font-size: 0.85rem; color: #718096; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: -10px;}
         .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .signal-btn { background: #ffffff; border: 1px solid #e2e8f0; padding: 14px; border-radius: 12px; font-size: 0.9rem; font-weight: 500; color: #4a5568; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .signal-btn { background: #ffffff; border: 1px solid #e2e8f0; padding: 14px; border-radius: 12px; font-size: 0.9rem; font-weight: 500; color: #4a5568; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: transform 0.1s, background 0.2s; }
         .signal-btn:active { transform: scale(0.97); background: #f7fafc; }
-        .response-box { background: #fffaf0; border: 1px solid #feebc8; padding: 15px; border-radius: 12px; font-size: 0.9rem; color: #c05621; line-height: 1.5; display: none; }
+        .signal-btn.active-signal { background: #e2e8f0; border-color: #cbd5e1; font-weight: 600; }
+        
+        .response-box { 
+            background: #fffaf0; 
+            border: 1px solid #feebc8; 
+            padding: 15px; 
+            border-radius: 12px; 
+            font-size: 0.9rem; 
+            color: #c05621; 
+            line-height: 1.5; 
+            display: none; 
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
 
-    <!-- 1. The Gateway Shield Container -->
     <div class="lock-screen" id="gatekeeper-panel">
         <span style="font-size: 2rem;">🔒</span>
         <h1>Secure Connection</h1>
@@ -121,14 +163,13 @@
         <button class="unlock-btn" onclick="verifyKey()">Unlock Vault</button>
     </div>
 
-    <!-- 2. The Inner Sanctuary Dashboard (Hidden by Default) -->
     <div class="mobile-frame" id="dashboard-panel">
         <div>
             <h1>Holding Space</h1>
             <p style="margin-top: 8px;" class="subtitle">A quiet corner kept safe for you while I'm away. No pressure to play along, no need to reply.</p>
         </div>
 
-        <div class="anchor-card">
+        <div class="anchor-card" id="reminder-card">
             <div class="card-header">
                 <span class="date-badge" id="vault-date">Reminder #1</span>
                 <span class="nav-link" onclick="cycleMessage()">Next Reminder →</span>
@@ -138,22 +179,27 @@
 
         <div class="audio-card">
             <span>Listen to my voice whenever you feel lost 🎧</span>
-            <audio controls src="voice_notes/note1.mp3"></audio>
+            <select class="audio-track-selector" id="voice-selector" onchange="changeVoiceNote(this.value)">
+                <option value="voice_notes/note1.mp3">Voice Note #1 — I'm right here</option>
+                <option value="voice_notes/note2.mp3">Voice Note #2 — Breathing through it</option>
+                <option value="voice_notes/note3.mp3">Voice Note #3 — A quiet reminder</option>
+            </select>
+            <audio id="audio-player" controls src="voice_notes/note1.mp3"></audio>
         </div>
 
         <span class="signal-title">Quick Status Signals</span>
         <div class="grid-layout">
-            <button class="signal-btn" onclick="triggerSignal('hug')">Need a hug 🫂</button>
-            <button class="signal-btn" onclick="triggerSignal('space')">Need space ☁️</button>
-            <button class="signal-btn" onclick="triggerSignal('quiet')">Brain is loud 🧠</button>
-            <button class="signal-btn" onclick="triggerSignal('missing')">Missing you 📍</button>
+            <button class="signal-btn" id="btn-hug" onclick="triggerSignal('hug')">Need a hug 🫂</button>
+            <button class="signal-btn" id="btn-space" onclick="triggerSignal('space')">Need space ☁️</button>
+            <button class="signal-btn" id="btn-quiet" onclick="triggerSignal('quiet')">Brain is loud 🧠</button>
+            <button class="signal-btn" id="btn-missing" onclick="triggerSignal('missing')">Missing you 📍</button>
         </div>
 
         <div class="response-box" id="feedback-panel"></div>
     </div>
 
     <script>
-        // SHA-256 Hashing engine to keep the plain-text password completely hidden
+        // SHA-256 Hashing engine
         async function sha256(string) {
             const utf8 = new TextEncoder().encode(string);
             const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
@@ -162,22 +208,25 @@
         }
 
         // The pre-hashed signature for "290697"
-        const secureToken = "fa88b68cb267eb9997424fb8006e00b86a079944062a425eb0af6899ffb737bb";
+        const secureToken = "f60cae2547b749372df031a7989a42e584f2759e669e4f50f28e2da88ddbc35d";
 
         async function verifyKey() {
             const input = document.getElementById('key-field').value;
             const hashedInput = await sha256(input.trim().toLowerCase());
             
             if (hashedInput === secureToken) {
-                // Drop the lock screen and flex the clean workspace
                 document.getElementById('gatekeeper-panel').style.display = 'none';
                 document.getElementById('dashboard-panel').style.display = 'flex';
+                loadSavedSignal();
             } else {
                 document.getElementById('wrong-key-alert').style.display = 'block';
+                const inputField = document.getElementById('key-field');
+                inputField.style.borderColor = '#e53e3e';
+                setTimeout(() => inputField.style.borderColor = '#cbd5e1', 1500);
             }
         }
 
-        // Dashboard text array logic
+        // Reminders data pool
         const messages = [
             { id: "Reminder #1", text: "I know your mind is noisy and exhausted right now. I don't need you to fix it, and I don't need you to pretend. I am standing guard right here." },
             { id: "Reminder #2", text: "Depression lies, baby. It tells you that you are a burden and that you are empty. It's wrong. You are whole, you are my wife, and I love you through this freeze." },
@@ -187,18 +236,50 @@
 
         let currentMsgIndex = 0;
         function cycleMessage() {
-            currentMsgIndex = (currentMsgIndex + 1) % messages.length;
-            document.getElementById('vault-date').innerText = messages[currentMsgIndex].id;
-            document.getElementById('vault-text').innerText = messages[currentMsgIndex].text;
+            const card = document.getElementById('reminder-card');
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(-2px)';
+            
+            setTimeout(() => {
+                currentMsgIndex = (currentMsgIndex + 1) % messages.length;
+                document.getElementById('vault-date').innerText = messages[currentMsgIndex].id;
+                document.getElementById('vault-text').innerText = messages[currentMsgIndex].text;
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 250);
         }
 
+        // Voice Note Engine switcher
+        function changeVoiceNote(sourceTrack) {
+            const player = document.getElementById('audio-player');
+            player.src = sourceTrack;
+            player.pause();
+        }
+
+        // Logic Engine for Status Signals
         function triggerSignal(type) {
             const panel = document.getElementById('feedback-panel');
             panel.style.display = "block";
-            if (type === 'hug') panel.innerText = "❤️ Signal logged. Close your eyes for a second. I am wrapping my arms around you from across the distance. Lean into it. I've got you.";
-            if (type === 'space') panel.innerText = "☁️ Signal logged. Turning down the volume. You have absolute permission to withdraw, disconnect, and ignore the world. No guilt allowed. I am still here.";
-            if (type === 'quiet') panel.innerText = "🧠 Signal logged. You don't have to process anything right now. Sit back, take a deep breath, and let my voice note play if you can handle it. Zero expectations.";
-            if (type === 'missing') panel.innerText = "📍 Signal logged. I feel it too, fiercely. But this distance has an expiration date, and my heart hasn't moved an inch from you.";
+            
+            document.querySelectorAll('.signal-btn').forEach(btn => btn.classList.remove('active-signal'));
+            document.getElementById(`btn-${type}`).classList.add('active-signal');
+
+            localStorage.setItem('activeSafeSignal', type);
+
+            let inlineResponse = "";
+            if (type === 'hug') inlineResponse = "❤️ Signal logged. Close your eyes for a second. I am wrapping my arms around you from across the distance. Lean into it. I've got you.";
+            if (type === 'space') inlineResponse = "☁️ Signal logged. Turning down the volume. You have absolute permission to withdraw, disconnect, and ignore the world. No guilt allowed. I am still here.";
+            if (type === 'quiet') inlineResponse = "🧠 Signal logged. You don't have to process anything right now. Sit back, take a deep breath, and let my voice note play if you can handle it. Zero expectations.";
+            if (type === 'missing') inlineResponse = "📍 Signal logged. I feel it too, fiercely. But this distance has an expiration date, and my heart hasn't moved an inch from you.";
+            
+            panel.innerText = inlineResponse;
+        }
+
+        function loadSavedSignal() {
+            const savedSignal = localStorage.getItem('activeSafeSignal');
+            if (savedSignal) {
+                triggerSignal(savedSignal);
+            }
         }
     </script>
 </body>
