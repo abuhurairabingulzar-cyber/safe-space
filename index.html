@@ -436,8 +436,6 @@
             // Mathematical Boundary Data
             let headSize = new THREE.Vector3();
             let headBox = new THREE.Box3();
-            
-            // --- ADDED THIS LINE THAT WAS MISSING ---
             let headCenterY = 0; 
             
             // Physics States
@@ -459,8 +457,6 @@
                 headBox.setFromObject(myModel);
                 headBox.getSize(headSize);
                 const center = headBox.getCenter(new THREE.Vector3());
-                
-                // --- ADDED THIS LINE THAT WAS MISSING ---
                 headCenterY = center.y; 
                 
                 const maxDim = Math.max(headSize.x, headSize.y, headSize.z);
@@ -469,6 +465,8 @@
                 myModel.traverse((child) => {
                     if (child.isMesh) {
                         child.userData.origPos = child.geometry.attributes.position.clone();
+                        // CRITICAL FIX: Tell the mobile GPU this mesh will change constantly
+                        child.geometry.attributes.position.setUsage(THREE.DynamicDrawUsage);
                     }
                 });
                 
@@ -498,7 +496,8 @@
                     isPinching = true;
                     let dx = e.touches[0].clientX - e.touches[1].clientX;
                     let dy = e.touches[0].clientY - e.touches[1].clientY;
-                    startPinchDist = Math.sqrt(dx*dx + dy*dy);
+                    // CRITICAL FIX: Math.max prevents the math from exploding to NaN/Infinity
+                    startPinchDist = Math.max(1, Math.sqrt(dx*dx + dy*dy)); 
                 }
             }, {passive:false});
 
@@ -513,15 +512,12 @@
                     
                     myModel.rotation.y += dx * 0.008;
                     myModel.rotation.x += dy * 0.008;
-
-                    // Stop the head from flipping completely upside down
                     myModel.rotation.x = Math.max(-0.6, Math.min(0.6, myModel.rotation.x));
 
                     lastTouchX = e.touches[0].clientX;
                     lastTouchY = e.touches[0].clientY;
 
                 } else if (e.touches.length === 2 && isPinching) {
-                    // Calculate how much the user has pinched outwards
                     let dx = e.touches[0].clientX - e.touches[1].clientX;
                     let dy = e.touches[0].clientY - e.touches[1].clientY;
                     let currentDist = Math.sqrt(dx*dx + dy*dy);
@@ -542,9 +538,16 @@
                 e.preventDefault();
                 if (e.touches.length < 2) {
                     isPinching = false;
-                    targetSqueeze = 0; // Smoothly return to normal
+                    targetSqueeze = 0; 
                 }
                 if (e.touches.length === 0) isDragging = false;
+            }, {passive:false});
+
+            // CRITICAL FIX: Catch system interruptions (like vibrations) that steal touches
+            container.addEventListener('touchcancel', (e) => {
+                isPinching = false;
+                isDragging = false;
+                targetSqueeze = 0;
             }, {passive:false});
 
             function triggerFacePop() {
@@ -566,11 +569,9 @@
                 }
 
                 if (myModel) {
-                    // --- VERTEX MAGNET PHYSICS ---
-                    // Smoothly transition the mathematical squeeze to avoid jarring jumps
+                    // Smoothly transition the mathematical squeeze
                     currentSqueeze += (targetSqueeze - currentSqueeze) * 0.15;
                     
-                    // If the face is being squeezed, loop through the memory vertices and pull them
                     if (Math.abs(currentSqueeze) > 0.001) {
                         myModel.traverse((child) => {
                             if (child.isMesh && child.userData.origPos) {
@@ -582,31 +583,32 @@
                                     let oy = orig.getY(i);
                                     let oz = orig.getZ(i);
                                     
-                                    // --- DIAL 1: MOVE THE MAGNET UP ---
                                     let magnetHeight = headCenterY + (headSize.y * 0.25); 
-
-                                    // --- DIAL 2: SHRINK THE MAGNET ---
                                     let magnetRadius = headSize.y * 0.15; 
-
-                                    // --- DIAL 3: THE CLOTHING KILLSWITCH ---
                                     let bottomCutoff = headCenterY + (headSize.y * 0.0); 
 
-                                    // 1. Killswitch: If the vertex is below the line, ignore it completely.
+                                    // Killswitch for clothes
                                     if (oy < bottomCutoff) {
                                         pos.setX(i, ox); 
                                         continue; 
                                     }
 
-                                    // 2. Math mask targeting ONLY the cheeks
                                     let verticalMask = Math.max(0, 1.0 - Math.abs(oy - magnetHeight) / magnetRadius); 
                                     let depthMask = Math.max(0, 1.0 - Math.abs(oz - (headSize.z * 0.4)) / (headSize.z * 0.5));   
                                     
-                                    // 3. Execute the pull
                                     let pullForce = ox * currentSqueeze * verticalMask * depthMask * 2.5; 
-                                    
                                     pos.setX(i, ox + pullForce);
                                 }
                                 pos.needsUpdate = true;
+                            }
+                        });
+                    } else if (currentSqueeze !== 0) {
+                        // CRITICAL FIX: Hard-reset vertices to original memory to prevent GPU drift
+                        currentSqueeze = 0;
+                        myModel.traverse((child) => {
+                            if (child.isMesh && child.userData.origPos) {
+                                child.geometry.attributes.position.copy(child.userData.origPos);
+                                child.geometry.attributes.position.needsUpdate = true;
                             }
                         });
                     }
