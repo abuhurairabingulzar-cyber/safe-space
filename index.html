@@ -575,10 +575,29 @@
                                     let oy = orig.getY(i);
                                     let oz = orig.getZ(i);
                                     
-                                    // Math mask targeting only the cheeks
-                                    let verticalMask = Math.max(0, 1.0 - Math.abs(oy + (headSize.y * 0.1)) / (headSize.y * 0.35)); 
+                                    // --- DIAL 1: MOVE THE MAGNET UP ---
+                                    // Increase 0.25 to move it higher up your face (try 0.35 or 0.4 if it's still too low)
+                                    let magnetHeight = headCenterY + (headSize.y * 0.25); 
+
+                                    // --- DIAL 2: SHRINK THE MAGNET ---
+                                    // This is the size of the pinch area. Decrease to 0.10 for a tighter circle.
+                                    let magnetRadius = headSize.y * 0.15; 
+
+                                    // --- DIAL 3: THE CLOTHING KILLSWITCH ---
+                                    // If your collar STILL moves, increase 0.0 to 0.1 or 0.15. It builds a brick wall.
+                                    let bottomCutoff = headCenterY + (headSize.y * 0.0); 
+
+                                    // 1. Killswitch: If the vertex is below the line (your clothes), ignore it completely.
+                                    if (oy < bottomCutoff) {
+                                        pos.setX(i, ox); 
+                                        continue; 
+                                    }
+
+                                    // 2. Math mask targeting ONLY the cheeks
+                                    let verticalMask = Math.max(0, 1.0 - Math.abs(oy - magnetHeight) / magnetRadius); 
                                     let depthMask = Math.max(0, 1.0 - Math.abs(oz - (headSize.z * 0.4)) / (headSize.z * 0.5));   
                                     
+                                    // 3. Execute the pull
                                     let pullForce = ox * currentSqueeze * verticalMask * depthMask * 2.5; 
                                     
                                     pos.setX(i, ox + pullForce);
