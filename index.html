@@ -437,6 +437,9 @@
             let headSize = new THREE.Vector3();
             let headBox = new THREE.Box3();
             
+            // --- ADDED THIS LINE THAT WAS MISSING ---
+            let headCenterY = 0; 
+            
             // Physics States
             let isPinching = false;
             let isDragging = false;
@@ -456,6 +459,10 @@
                 headBox.setFromObject(myModel);
                 headBox.getSize(headSize);
                 const center = headBox.getCenter(new THREE.Vector3());
+                
+                // --- ADDED THIS LINE THAT WAS MISSING ---
+                headCenterY = center.y; 
+                
                 const maxDim = Math.max(headSize.x, headSize.y, headSize.z);
                 
                 // Take a memory snapshot of the original geometry
@@ -576,18 +583,15 @@
                                     let oz = orig.getZ(i);
                                     
                                     // --- DIAL 1: MOVE THE MAGNET UP ---
-                                    // Increase 0.25 to move it higher up your face (try 0.35 or 0.4 if it's still too low)
                                     let magnetHeight = headCenterY + (headSize.y * 0.25); 
 
                                     // --- DIAL 2: SHRINK THE MAGNET ---
-                                    // This is the size of the pinch area. Decrease to 0.10 for a tighter circle.
                                     let magnetRadius = headSize.y * 0.15; 
 
                                     // --- DIAL 3: THE CLOTHING KILLSWITCH ---
-                                    // If your collar STILL moves, increase 0.0 to 0.1 or 0.15. It builds a brick wall.
                                     let bottomCutoff = headCenterY + (headSize.y * 0.0); 
 
-                                    // 1. Killswitch: If the vertex is below the line (your clothes), ignore it completely.
+                                    // 1. Killswitch: If the vertex is below the line, ignore it completely.
                                     if (oy < bottomCutoff) {
                                         pos.setX(i, ox); 
                                         continue; 
