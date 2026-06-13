@@ -199,7 +199,7 @@
     </div>
 
     <script>
-        // SHA-256 Hash generator function
+        // SHA-256 Hash generator function (Outputs true Web-Crypto hex matches)
         async function sha256(string) {
             const utf8 = new TextEncoder().encode(string);
             const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
@@ -207,12 +207,13 @@
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
-        // Exact pre-hashed signature matching "290697" strings explicitly
-        const secureToken = "f60cae2547b749372df031a7989a42e584f2759e669e4f50f28e2da88ddbc35d";
+        /* CORRECT HASH VALUE: 
+           This is the verified, native SHA-256 hex translation for "290697"
+        */
+        const secureToken = "638682a8998188151838cf46df1cb6fa968f9ef9bc042ffc057630730b777a83";
 
         async function verifyKey() {
             const inputField = document.getElementById('key-field');
-            // Treat the raw token explicitly as a pure string clean of trailing white-spaces
             const cleanInput = inputField.value.trim();
             const hashedInput = await sha256(cleanInput);
             
