@@ -30,6 +30,7 @@
             padding: 30px 24px;
             flex-direction: column;
             gap: 22px;
+            position: relative;
         }
 
         /* The Gatekeeper Screen Component */
@@ -132,6 +133,25 @@
         .signal-btn:active { transform: scale(0.97); background: #f7fafc; }
         .signal-btn.active-signal { background: #e2e8f0; border-color: #cbd5e1; font-weight: 600; }
         
+        /* Gallery Launch Button */
+        .gallery-trigger-btn {
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+            border: none;
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #2d3748;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+            transition: transform 0.2s;
+        }
+        .gallery-trigger-btn:active { transform: scale(0.98); }
+
         .response-box { 
             background: #fffaf0; 
             border: 1px solid #feebc8; 
@@ -144,6 +164,100 @@
             animation: fadeIn 0.4s ease;
         }
 
+        /* --- GALLERY VIEW DRAWER MODAL --- */
+        .gallery-drawer {
+            position: fixed;
+            bottom: -100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 412px;
+            height: 85vh;
+            background: #ffffff;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
+            border-radius: 32px 32px 0 0;
+            z-index: 100;
+            box-sizing: border-box;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+        }
+        .gallery-drawer.open { bottom: 0; }
+        @media (max-width: 412px) {
+            .gallery-drawer { height: 100vh; border-radius: 0; }
+        }
+
+        .drawer-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #f1f5f9; }
+        .close-drawer-btn { background: #edf2f7; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #4a5568; }
+        
+        /* Scrollable area inside drawer */
+        .sketches-stream {
+            overflow-y: auto;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            padding-right: 4px;
+        }
+        .sketches-stream::-webkit-scrollbar { width: 5px; }
+        .sketches-stream::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        .sketch-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+        .sketch-img-wrapper {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            background: #edf2f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .sketch-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: opacity 0.2s;
+        }
+        .sketch-card img:hover { opacity: 0.9; }
+        .sketch-meta { margin-top: 12px; font-size: 0.88rem; color: #4a5568; line-height: 1.5; font-style: italic; padding: 0 4px; }
+
+        /* --- LIGHTBOX OVERLAY (CLICK TO VIEW FULL-SIZE) --- */
+        .lightbox-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            z-index: 200;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+            padding: 20px;
+        }
+        .lightbox-content {
+            max-width: 100%;
+            max-height: 85vh;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .lightbox-close {
+            position: absolute;
+            top: 24px; right: 24px;
+            background: white; border: none;
+            width: 40px; height: 40px; border-radius: 50%;
+            font-size: 1.4rem; font-weight: bold; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 210;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
@@ -152,6 +266,7 @@
 </head>
 <body>
 
+    <!-- 1. The Gateway Shield Container -->
     <div class="lock-screen" id="gatekeeper-panel">
         <span style="font-size: 2rem;">🔒</span>
         <h1>Secure Connection</h1>
@@ -163,6 +278,7 @@
         <button class="unlock-btn" onclick="verifyKey()">Unlock Vault</button>
     </div>
 
+    <!-- 2. The Inner Sanctuary Dashboard -->
     <div class="mobile-frame" id="dashboard-panel">
         <div>
             <h1>Holding Space</h1>
@@ -176,6 +292,11 @@
             </div>
             <p class="message-text" id="vault-text">"I know your mind is noisy and exhausted right now. I don't need you to fix it, and I don't need you to pretend. I am standing guard right here."</p>
         </div>
+
+        <!-- Sketches Vault Button Link -->
+        <button class="gallery-trigger-btn" onclick="toggleDrawer(true)">
+            🎨 Open Your Sketch Vault →
+        </button>
 
         <div class="audio-card">
             <span>Listen to my voice whenever you feel lost 🎧</span>
@@ -198,13 +319,63 @@
         <div class="response-box" id="feedback-panel"></div>
     </div>
 
+    <!-- 3. Sliding Memory Drawer Section -->
+    <div class="gallery-drawer" id="sketch-drawer">
+        <div class="drawer-header">
+            <div>
+                <h2 style="margin:0; font-size:1.2rem; color:#1a202c;">Your Sketches Vault</h2>
+                <span style="font-size:0.8rem; color:#718096;">Little spaces caught in ink and lines.</span>
+            </div>
+            <button class="close-drawer-btn" onclick="toggleDrawer(false)">✕</button>
+        </div>
+        
+        <!-- Scrolling Gallery Feed Area (Updated to target pic1, pic2, pic3) -->
+        <div class="sketches-stream">
+            
+            <!-- Sketch Card 1 -->
+            <div class="sketch-card">
+                <div class="sketch-img-wrapper" onclick="openLightbox('sketches/pic1.jpg')">
+                    <img src="sketches/pic1.jpg" alt="Sketch 1" onerror="this.src='https://placehold.co/400x300?text=pic1.jpg+not+found'">
+                </div>
+                <div class="sketch-meta">
+                    "Remember that rainy Sunday morning when we just stayed up talking about everything? This line was drawn thinking about the way you laugh when you're sleepy."
+                </div>
+            </div>
+
+            <!-- Sketch Card 2 -->
+            <div class="sketch-card">
+                <div class="sketch-img-wrapper" onclick="openLightbox('sketches/pic2.jpg')">
+                    <img src="sketches/pic2.jpg" alt="Sketch 2" onerror="this.src='https://placehold.co/400x300?text=pic2.jpg+not+found'">
+                </div>
+                <div class="sketch-meta">
+                    "You sitting by the window with your hair up. You thought you looked messy, but to me, you looked like a complete masterpiece."
+                </div>
+            </div>
+
+            <!-- Sketch Card 3 -->
+            <div class="sketch-card">
+                <div class="sketch-img-wrapper" onclick="openLightbox('sketches/pic3.jpg')">
+                    <img src="sketches/pic3.jpg" alt="Sketch 3" onerror="this.src='https://placehold.co/400x300?text=pic3.jpg+not+found'">
+                </div>
+                <div class="sketch-meta">
+                    "Hold onto this memory tightly. Even when everything feels frozen right now, your warmth is safely kept here with me."
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 4. The Lightbox Zoom View -->
+    <div class="lightbox-overlay" id="lightbox" onclick="closeLightbox()">
+        <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+        <img class="lightbox-content" id="lightbox-img" src="" alt="Zoomed View">
+    </div>
+
     <script>
         const targetPasskey = "290697";
 
         function verifyKey() {
             const inputField = document.getElementById('key-field');
-            
-            // This strictly removes ALL spaces, ensuring pure numbers always match
             const cleanInput = inputField.value.replace(/\s+/g, '');
             
             if (cleanInput === targetPasskey) {
@@ -264,11 +435,36 @@
             panel.innerText = inlineResponse;
         }
 
+        document.addEventListener("DOMContentLoaded", function() {
+            // Self-contained logic loader
+        });
+
         function loadSavedSignal() {
             const savedSignal = localStorage.getItem('activeSafeSignal');
             if (savedSignal) {
                 triggerSignal(savedSignal);
             }
+        }
+
+        /* --- MODAL CONTROLLERS --- */
+        function toggleDrawer(isOpen) {
+            const drawer = document.getElementById('sketch-drawer');
+            if (isOpen) {
+                drawer.classList.add('open');
+            } else {
+                drawer.classList.remove('open');
+            }
+        }
+
+        function openLightbox(imgSrc) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            lightboxImg.src = imgSrc;
+            lightbox.style.display = 'flex';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').style.display = 'none';
         }
     </script>
 </body>
