@@ -21,7 +21,7 @@
 
         /* The Main Secured Dashboard Structure */
         .mobile-frame {
-            display: none; /* Hidden strictly until password verification executes successfully */
+            display: none; 
             background: #ffffff;
             width: 100%;
             max-width: 412px;
@@ -157,7 +157,7 @@
         <h1>Secure Connection</h1>
         <p class="subtitle">This space is private, encrypted, and kept solely for my wife. Enter your password key to open.</p>
         
-        <input type="password" class="password-input" id="key-field" placeholder="Enter secret phrase..." onkeydown="if(event.key==='Enter') verifyKey()">
+        <input type="password" class="password-input" id="key-field" placeholder="Enter password key..." onkeydown="if(event.key==='Enter') verifyKey()">
         <div class="error-msg" id="wrong-key-alert">Incorrect key. Try again, love.</div>
         
         <button class="unlock-btn" onclick="verifyKey()">Unlock Vault</button>
@@ -199,7 +199,7 @@
     </div>
 
     <script>
-        // SHA-256 Hashing engine
+        // SHA-256 Hash generator function
         async function sha256(string) {
             const utf8 = new TextEncoder().encode(string);
             const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
@@ -207,12 +207,14 @@
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
-        // The pre-hashed signature for "290697"
+        // Exact pre-hashed signature matching "290697" strings explicitly
         const secureToken = "f60cae2547b749372df031a7989a42e584f2759e669e4f50f28e2da88ddbc35d";
 
         async function verifyKey() {
-            const input = document.getElementById('key-field').value;
-            const hashedInput = await sha256(input.trim().toLowerCase());
+            const inputField = document.getElementById('key-field');
+            // Treat the raw token explicitly as a pure string clean of trailing white-spaces
+            const cleanInput = inputField.value.trim();
+            const hashedInput = await sha256(cleanInput);
             
             if (hashedInput === secureToken) {
                 document.getElementById('gatekeeper-panel').style.display = 'none';
@@ -220,13 +222,11 @@
                 loadSavedSignal();
             } else {
                 document.getElementById('wrong-key-alert').style.display = 'block';
-                const inputField = document.getElementById('key-field');
                 inputField.style.borderColor = '#e53e3e';
                 setTimeout(() => inputField.style.borderColor = '#cbd5e1', 1500);
             }
         }
 
-        // Reminders data pool
         const messages = [
             { id: "Reminder #1", text: "I know your mind is noisy and exhausted right now. I don't need you to fix it, and I don't need you to pretend. I am standing guard right here." },
             { id: "Reminder #2", text: "Depression lies, baby. It tells you that you are a burden and that you are empty. It's wrong. You are whole, you are my wife, and I love you through this freeze." },
@@ -249,14 +249,12 @@
             }, 250);
         }
 
-        // Voice Note Engine switcher
         function changeVoiceNote(sourceTrack) {
             const player = document.getElementById('audio-player');
             player.src = sourceTrack;
             player.pause();
         }
 
-        // Logic Engine for Status Signals
         function triggerSignal(type) {
             const panel = document.getElementById('feedback-panel');
             panel.style.display = "block";
