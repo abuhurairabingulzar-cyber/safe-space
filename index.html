@@ -19,20 +19,37 @@
             min-height: 100vh;
         }
 
+        /* The Main Secured Dashboard Structure */
         .mobile-frame {
+            display: none; /* Hidden strictly until password verification executes successfully */
             background: #ffffff;
             width: 100%;
             max-width: 412px;
             min-height: 100vh;
             box-sizing: border-box;
             padding: 30px 24px;
-            display: flex;
             flex-direction: column;
             gap: 22px;
         }
 
+        /* The Gatekeeper Screen Component */
+        .lock-screen {
+            background: #ffffff;
+            width: 100%;
+            max-width: 412px;
+            min-height: 100vh;
+            box-sizing: border-box;
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            gap: 20px;
+        }
+
         @media (min-width: 413px) {
-            .mobile-frame {
+            .mobile-frame, .lock-screen {
                 min-height: 85vh;
                 border-radius: 32px;
                 box-shadow: 0 20px 60px rgba(0, 0, 0, 0.05);
@@ -42,84 +59,75 @@
         h1 { font-size: 1.5rem; color: #1a202c; margin: 0; font-weight: 700; }
         .subtitle { font-size: 0.9rem; color: #718096; margin: 0; line-height: 1.5; }
 
-        /* Component: Text Anchor Log with Navigation */
-        .anchor-card {
-            background-color: #f7fafc;
-            border-left: 4px solid #cbd5e1;
-            padding: 18px;
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        /* Security Input Fields */
+        .password-input {
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+            font-size: 1rem;
+            text-align: center;
+            box-sizing: border-box;
+            background: #f7fafc;
+            color: #2d3748;
+            outline: none;
+            transition: border 0.2s;
         }
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .password-input:focus { border-color: #cbd5e1; }
+
+        .unlock-btn {
+            width: 100%;
+            background: #4a5568;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
         }
+        .unlock-btn:active { background: #2d3748; }
+
+        .error-msg { font-size: 0.85rem; color: #e53e3e; display: none; margin-top: -5px; }
+
+        /* Dashboard Internal Styles */
+        .anchor-card { background-color: #f7fafc; border-left: 4px solid #cbd5e1; padding: 18px; border-radius: 12px; display: flex; flex-direction: column; gap: 12px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; }
         .date-badge { font-size: 0.75rem; color: #a0aec0; font-weight: 700; text-transform: uppercase; }
         .nav-link { font-size: 0.8rem; color: #4a5568; cursor: pointer; text-decoration: underline; font-weight: 500; }
         .message-text { margin: 0; font-size: 0.95rem; color: #4a5568; line-height: 1.6; min-height: 70px; }
-
-        /* Component: Secure Voice Note Player */
-        .audio-card {
-            background: #edf2f7;
-            padding: 18px;
-            border-radius: 16px;
-            text-align: center;
-        }
+        .audio-card { background: #edf2f7; padding: 18px; border-radius: 16px; text-align: center; }
         .audio-card span { font-size: 0.85rem; color: #4a5568; font-weight: 600; display: block; margin-bottom: 12px; }
         audio { width: 100%; }
-
-        /* Component: Interactive Low-Pressure Signals */
         .signal-title { font-size: 0.85rem; color: #718096; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: -10px;}
-        .grid-layout {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        .signal-btn {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            padding: 14px;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: #4a5568;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        .signal-btn:active {
-            transform: scale(0.97);
-            background: #f7fafc;
-        }
-        
-        /* Interactive Output Box */
-        .response-box {
-            background: #fffaf0;
-            border: 1px solid #feebc8;
-            padding: 15px;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            color: #c05621;
-            line-height: 1.5;
-            display: none; /* Hidden until a button is pressed */
-        }
+        .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .signal-btn { background: #ffffff; border: 1px solid #e2e8f0; padding: 14px; border-radius: 12px; font-size: 0.9rem; font-weight: 500; color: #4a5568; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .signal-btn:active { transform: scale(0.97); background: #f7fafc; }
+        .response-box { background: #fffaf0; border: 1px solid #feebc8; padding: 15px; border-radius: 12px; font-size: 0.9rem; color: #c05621; line-height: 1.5; display: none; }
     </style>
 </head>
 <body>
 
-    <div class="mobile-frame">
+    <!-- 1. The Gateway Shield Container -->
+    <div class="lock-screen" id="gatekeeper-panel">
+        <span style="font-size: 2rem;">🔒</span>
+        <h1>Secure Connection</h1>
+        <p class="subtitle">This space is private, encrypted, and kept solely for my wife. Enter your password key to open.</p>
+        
+        <input type="password" class="password-input" id="key-field" placeholder="Enter secret phrase..." onkeydown="if(event.key==='Enter') verifyKey()">
+        <div class="error-msg" id="wrong-key-alert">Incorrect key. Try again, love.</div>
+        
+        <button class="unlock-btn" onclick="verifyKey()">Unlock Vault</button>
+    </div>
+
+    <!-- 2. The Inner Sanctuary Dashboard (Hidden by Default) -->
+    <div class="mobile-frame" id="dashboard-panel">
         <div>
             <h1>Holding Space</h1>
             <p style="margin-top: 8px;" class="subtitle">A quiet corner kept safe for you while I'm away. No pressure to play along, no need to reply.</p>
         </div>
 
-        <!-- Dynamic Text Vault Component -->
         <div class="anchor-card">
             <div class="card-header">
                 <span class="date-badge" id="vault-date">Reminder #1</span>
@@ -128,14 +136,11 @@
             <p class="message-text" id="vault-text">"I know your mind is noisy and exhausted right now. I don't need you to fix it, and I don't need you to pretend. I am standing guard right here."</p>
         </div>
 
-        <!-- Voice Note Component -->
         <div class="audio-card">
             <span>Listen to my voice whenever you feel lost 🎧</span>
-            <!-- Explicit placeholder file path for local verification -->
-            <audio controls src="voice-notes/note1.mp3"></audio>
+            <audio controls src="voice_notes/note1.mp3"></audio>
         </div>
 
-        <!-- Interactive Signals -->
         <span class="signal-title">Quick Status Signals</span>
         <div class="grid-layout">
             <button class="signal-btn" onclick="triggerSignal('hug')">Need a hug 🫂</button>
@@ -144,12 +149,35 @@
             <button class="signal-btn" onclick="triggerSignal('missing')">Missing you 📍</button>
         </div>
 
-        <!-- Safe feedback area that generates instant confirmation validation -->
         <div class="response-box" id="feedback-panel"></div>
     </div>
 
     <script>
-        // Internal Vault Array containing shifting, grounding anchors
+        // SHA-256 Hashing engine to keep the plain-text password completely hidden
+        async function sha256(string) {
+            const utf8 = new TextEncoder().encode(string);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // The pre-hashed signature for "290697"
+        const secureToken = "fa88b68cb267eb9997424fb8006e00b86a079944062a425eb0af6899ffb737bb";
+
+        async function verifyKey() {
+            const input = document.getElementById('key-field').value;
+            const hashedInput = await sha256(input.trim().toLowerCase());
+            
+            if (hashedInput === secureToken) {
+                // Drop the lock screen and flex the clean workspace
+                document.getElementById('gatekeeper-panel').style.display = 'none';
+                document.getElementById('dashboard-panel').style.display = 'flex';
+            } else {
+                document.getElementById('wrong-key-alert').style.display = 'block';
+            }
+        }
+
+        // Dashboard text array logic
         const messages = [
             { id: "Reminder #1", text: "I know your mind is noisy and exhausted right now. I don't need you to fix it, and I don't need you to pretend. I am standing guard right here." },
             { id: "Reminder #2", text: "Depression lies, baby. It tells you that you are a burden and that you are empty. It's wrong. You are whole, you are my wife, and I love you through this freeze." },
@@ -158,27 +186,19 @@
         ];
 
         let currentMsgIndex = 0;
-
         function cycleMessage() {
             currentMsgIndex = (currentMsgIndex + 1) % messages.length;
             document.getElementById('vault-date').innerText = messages[currentMsgIndex].id;
             document.getElementById('vault-text').innerText = messages[currentMsgIndex].text;
         }
 
-        // Logic processing for one-way support confirmations
         function triggerSignal(type) {
             const panel = document.getElementById('feedback-panel');
             panel.style.display = "block";
-            
-            if (type === 'hug') {
-                panel.innerText = "❤️ Signal logged. Close your eyes for a second. I am wrapping my arms around you from across the distance. Lean into it. I've got you.";
-            } else if (type === 'space') {
-                panel.innerText = "☁️ Signal logged. Turning down the volume. You have absolute permission to withdraw, disconnect, and ignore the world. No guilt allowed. I am still here.";
-            } else if (type === 'quiet') {
-                panel.innerText = "🧠 Signal logged. You don't have to process anything right now. Sit back, take a deep breath, and let my voice note play if you can handle it. Zero expectations.";
-            } else if (type === 'missing') {
-                panel.innerText = "📍 Signal logged. I feel it too, fiercely. But this distance has an expiration date, and my heart hasn't moved an inch from you.";
-            }
+            if (type === 'hug') panel.innerText = "❤️ Signal logged. Close your eyes for a second. I am wrapping my arms around you from across the distance. Lean into it. I've got you.";
+            if (type === 'space') panel.innerText = "☁️ Signal logged. Turning down the volume. You have absolute permission to withdraw, disconnect, and ignore the world. No guilt allowed. I am still here.";
+            if (type === 'quiet') panel.innerText = "🧠 Signal logged. You don't have to process anything right now. Sit back, take a deep breath, and let my voice note play if you can handle it. Zero expectations.";
+            if (type === 'missing') panel.innerText = "📍 Signal logged. I feel it too, fiercely. But this distance has an expiration date, and my heart hasn't moved an inch from you.";
         }
     </script>
 </body>
