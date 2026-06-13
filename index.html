@@ -366,13 +366,41 @@
                 let centerX = width / 2, centerY = height / 2;
 
                 for(let i=0; i<points.length; i++) {
-                    let p = points[i], targetX = centerX + p.baseX * currentRadius, targetY = centerY + p.baseY * currentRadius;
+                    let p = points[i];
+                    let targetX = centerX + p.baseX * currentRadius;
+                    let targetY = centerY + p.baseY * currentRadius;
+                    
+                    // Default friction (0.75 feels like calm, thick breathing)
+                    let damping = 0.75; 
+                    let stiffness = 0.1;
+
                     if (isTouching) {
                         let dx = touchX - p.x, dy = touchY - p.y, dist = Math.sqrt(dx*dx + dy*dy);
-                        if (dist < 150) { targetX += (dx / dist) * 100; targetY += (dy / dist) * 100; }
+                        if (dist < 150) { 
+                            // 1. Pull the balloon toward the finger
+                            targetX += (dx / dist) * 120; 
+                            targetY += (dy / dist) * 120; 
+                            
+                            // 2. THE VIBRATION INJECTION
+                            // This creates a fast, chaotic jitter simulating a taut rubber surface
+                            let fastTime = Date.now() * 0.05; 
+                            targetX += Math.sin(fastTime + i) * 8; // X-axis jiggle
+                            targetY += Math.cos(fastTime - i) * 8; // Y-axis jiggle
+                            
+                            // 3. Make the physics "bouncier" while she holds it
+                            damping = 0.88; // Less friction = more wobbly/elastic
+                            stiffness = 0.15; // Snaps back towards the finger faster
+                        }
                     }
-                    let ax = (targetX - p.x) * 0.1, ay = (targetY - p.y) * 0.1;
-                    p.vx = (p.vx + ax) * 0.75; p.vy = (p.vy + ay) * 0.75; p.x += p.vx; p.y += p.vy;
+                    
+                    // Apply the spring physics
+                    let ax = (targetX - p.x) * stiffness; 
+                    let ay = (targetY - p.y) * stiffness;
+                    
+                    p.vx = (p.vx + ax) * damping; 
+                    p.vy = (p.vy + ay) * damping; 
+                    p.x += p.vx; 
+                    p.y += p.vy;
                 }
 
                 ctx.beginPath();
