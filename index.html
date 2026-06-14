@@ -11,7 +11,6 @@
     <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
     <style>
-        /* SAFARI FIX: Explicitly forcing the core web layers to be 100% tall to prevent height collapse */
         html, body {
             width: 100%;
             height: 100%;
@@ -31,7 +30,6 @@
             overscroll-behavior: none;
         }
 
-        /* SAFARI FIX: Changed position to fixed and added fallback vh/dvh sizing */
         .mobile-frame {
             display: none; background: #ffffff; width: 100%; max-width: 412px; 
             height: 100vh; height: 100dvh; position: fixed; top: 0; bottom: 0; left: 0; right: 0; margin: auto;
@@ -92,7 +90,6 @@
 
         .response-box { background: #fffaf0; border: 1px solid #feebc8; padding: 15px; border-radius: 12px; font-size: 0.9rem; color: #c05621; line-height: 1.5; display: none; }
 
-        /* --- SLIDE UP OVERLAYS --- */
         .slide-up-screen {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
             width: 100%; height: 100%; 
@@ -243,6 +240,13 @@
     </div>
 
     <script>
+        /* --- SAFARI PINCH HIJACK KILL-SWITCH --- */
+        // This explicitly forbids Apple from stealing 2-finger touches inside the app
+        document.addEventListener('gesturestart', function (e) { e.preventDefault(); }, { passive: false });
+        document.addEventListener('gesturechange', function (e) { e.preventDefault(); }, { passive: false });
+        document.addEventListener('gestureend', function (e) { e.preventDefault(); }, { passive: false });
+
+        /* --- MAIN LOGIC & PASSKEY --- */
         const targetPasskey = "290697";
 
         function verifyKey() {
@@ -449,7 +453,7 @@
             render();
         }
 
-        /* --- 3D FACE SQUEEZE ENGINE (SAFARI PROOFED) --- */
+        /* --- 3D FACE SQUEEZE ENGINE --- */
         let faceEngineRunning = false;
         
         const faceResponses = [
@@ -465,11 +469,7 @@
         function openFace3D() {
             closeScreen('sanctuary-menu');
             openScreen('face');
-            
-            // SAFARI FIX: Give iOS 50ms to calculate the true screen size before booting 3D
-            setTimeout(() => {
-                initFaceEngine();
-            }, 50);
+            setTimeout(() => { initFaceEngine(); }, 50);
         }
 
         function initFaceEngine() {
@@ -485,11 +485,9 @@
 
             const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             
-            // SAFARI FIX: Cap the pixel ratio
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.setSize(window.innerWidth, window.innerHeight);
             
-            // SAFARI FIX: Force the canvas to explicitly fill the container dimensions
             renderer.domElement.style.width = '100%';
             renderer.domElement.style.height = '100%';
             
@@ -611,7 +609,7 @@
             }, {passive:false});
 
             function triggerFacePop() {
-                if (window.navigator.vibrate) window.navigator.vibrate(40); 
+                if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(40); 
                 
                 const box = document.getElementById('dialogue-cloud');
                 box.innerText = faceResponses[Math.floor(Math.random() * faceResponses.length)];
