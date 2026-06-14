@@ -355,10 +355,49 @@
             }
 
             let touchX = -1000, touchY = -1000, isTouching = false;
-            canvas.addEventListener('touchstart', e => { e.preventDefault(); isTouching = true; touchX = e.touches[0].clientX; touchY = e.touches[0].clientY; }, {passive:false});
-            canvas.addEventListener('touchmove', e => { e.preventDefault(); touchX = e.touches[0].clientX; touchY = e.touches[0].clientY; }, {passive:false});
-            canvas.addEventListener('touchend', e => { e.preventDefault(); isTouching = false; }, {passive:false});
+            let lastVibeTime = 0; // Memory for the haptic engine
 
+            canvas.addEventListener('touchstart', e => { 
+                e.preventDefault(); 
+                isTouching = true; 
+                touchX = e.touches[0].clientX; 
+                touchY = e.touches[0].clientY; 
+                
+                // Gentle tap when she first touches the cloud
+                if (window.navigator.vibrate) window.navigator.vibrate(15); 
+            }, {passive:false});
+
+            canvas.addEventListener('touchmove', e => { 
+                e.preventDefault(); 
+                touchX = e.touches[0].clientX; 
+                touchY = e.touches[0].clientY; 
+
+                // Calculate how far she is pulling the cloud from the center
+                let dx = touchX - width/2;
+                let dy = touchY - height/2;
+                let pullDist = Math.sqrt(dx*dx + dy*dy);
+
+                // The Haptic "Ticks" of Tension
+                // If she pulls it far, and 150 milliseconds have passed since the last tick...
+                if (pullDist > 80 && Date.now() - lastVibeTime > 150) { 
+                    if (window.navigator.vibrate) window.navigator.vibrate(8); // Tiny, fast tick
+                    lastVibeTime = Date.now();
+                }
+            }, {passive:false});
+
+            canvas.addEventListener('touchend', e => { 
+                e.preventDefault(); 
+                isTouching = false; 
+                
+                // Satisfying 'thud' when it snaps back into place
+                if (window.navigator.vibrate) window.navigator.vibrate(40); 
+            }, {passive:false});
+
+            // Safety net so the cloud doesn't freeze if the vibration interrupts the touch
+            canvas.addEventListener('touchcancel', e => { 
+                e.preventDefault(); 
+                isTouching = false; 
+            }, {passive:false});
             function render() {
                 if(document.getElementById('screen-cloud').style.display === 'none') { cloudEngineRunning = false; return; }
                 ctx.clearRect(0, 0, width, height);
